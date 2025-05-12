@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Details - Happy Tails</title>
+    <link href="/SHOP/shop-order-details.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="goBack()">← Back to Orders</button>
+        <h1>Order Details</h1>
+    </div>
+    
+    <div class="order-container">
+        <% if (order) { %>
+            <div class="order-info">
+                <h2 id="orderId">Order #<%= order.order_id %> <span id="orderStatus" class="order-status status-<%= order.status.toLowerCase() %>"><%= order.status %></span></h2>
+                
+                <div class="info-grid">
+                    <div>
+                        <div class="info-row">
+                            <div class="info-label">Order Date:</div>
+                            <div class="info-value" id="orderDate"><%= order.order_date.toDateString() %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Payment Method:</div>
+                            <div class="info-value" id="paymentMethod"><%= order.payment_method %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Payment Status:</div>
+                            <div class="info-value" id="paymentStatus"><%= order.payment_status %></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="info-row">
+                            <div class="info-label">Customer:</div>
+                            <div class="info-value" id="customerName"><%= order.customer.name %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Email:</div>
+                            <div class="info-value" id="customerEmail"><%= order.customer.email %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Phone:</div>
+                            <div class="info-value" id="customerPhone"><%= order.customer.phone %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-info">
+                <h3>Shipping Information</h3>
+                
+                <div class="info-grid">
+                    <div>
+                        <div class="info-row">
+                            <div class="info-label">Shipping Address:</div>
+                            <div class="info-value" id="shippingAddress"><%= order.shipping.address %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Shipping Method:</div>
+                            <div class="info-value" id="shippingMethod"><%= order.shipping.method %></div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="info-row">
+                            <div class="info-label">Tracking Number:</div>
+                            <div class="info-value" id="trackingNumber"><%= order.shipping.tracking_number || 'N/A' %></div>
+                        </div>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Estimated Delivery:</div>
+                            <div class="info-value" id="estimatedDelivery"><%= order.shipping.estimated_delivery ? order.shipping.estimated_delivery.toDateString() : 'N/A' %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-items">
+                <h3>Order Items</h3>
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>SKU</th>
+                            <th>Price</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderItemsBody">
+                        <% order.items.forEach(item => { %>
+                            <tr>
+                                <td><%= item.product_name %></td>
+                                <td><%= item.sku %></td>
+                                <td>$<%= item.price.toFixed(2) %></td>
+                                <td><%= item.quantity %></td>
+                                <td>$<%= (item.price * item.quantity).toFixed(2) %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+                
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <div>Subtotal</div>
+                        <div id="subtotal">$<%= order.subtotal.toFixed(2) %></div>
+                    </div>
+                    <div class="summary-row">
+                        <div>Shipping</div>
+                        <div id="shipping">$<%= order.shipping_cost.toFixed(2) %></div>
+                    </div>
+                    <div class="summary-row">
+                        <div>Tax</div>
+                        <div id="tax">$<%= order.tax.toFixed(2) %></div>
+                    </div>
+                    <div class="summary-total">
+                        <div>Total</div>
+                        <div id="total">$<%= order.total.toFixed(2) %></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="order-container">
+                <div class="tracking-section">
+                    <h3>Order Timeline</h3>
+                    <div class="tracking-timeline">
+                        <% order.timeline.forEach(event => { %>
+                            <div class="timeline-item <%= event.status.toLowerCase() %>-item">
+                                <div class="timeline-date"><%= event.date.toLocaleString() %></div>
+                                <div class="timeline-content"><%= event.description %></div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    <button class="action-btn print-btn" onclick="printOrder()">Print Order</button>
+                </div>
+            </div>
+        <% } else { %>
+            <div class="order-container">
+                <p>No order details found.</p>
+            </div>
+        <% } %>
+    </div>
+    
+    <script>
+        function goBack() {
+            window.location.href = '/shop-orders';
+        }
+
+        function printOrder() {
+            window.print();
+        }
+    </script>
+</body>
+</html>

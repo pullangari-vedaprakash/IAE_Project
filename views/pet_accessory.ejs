@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Accessory</title>
+    <link rel="stylesheet" href="/pet accessory/pet-accessory.css">
+</head>
+<body>
+    <div class="navbar">
+        <header>
+            <a href="/home" class="badge">Happy Tails</a>
+            <div class="menu">
+                <a href="/Events">Events</a>
+                <a href="/blog">Blog</a>
+                <a href="#" id="cart_btn">Cart</a>
+                <% if (user) { %>
+                    <a href="/profile">Profile</a>
+                <% } else { %>
+                    <a href="/my_login">Login/SignUp</a>
+                <% } %>
+            </div>
+            <div class="menu-icon" id="menuIcon">
+                <img src="/icons/hamburger-svgrepo-com.svg" alt="Menu" height="25px" />
+            </div>
+            <div class="side-navbar" id="sideNavbar">
+                <a href="javascript:void(0)" class="close-btn" id="closeBtn">×</a>       
+                <a href="/Events">Events</a>
+                <a href="/blog">Blog</a>
+                <a href="#" id="mobile_cart_btn">Cart</a>
+                <% if (user) { %>
+                    <a href="/profile">Profile</a>
+                <% } else { %>
+                    <a href="/my_login">Login/SignUp</a>
+                <% } %>
+            </div>
+            <div id="cart" class="cart">
+                <div class="cart_wrapper">
+                    <div class="cart_header">
+                        <h2>Cart</h2>
+                        <a href="javascript:void(0)" class="close-btn" id="CartcloseBtn">×</a>
+                    </div>
+                    <hr>
+                    <div class="cart_product_container" id="cart_product_container">
+                        <!-- Cart items will be dynamically added here -->
+                    </div>
+                    <div class="subtotal">
+                        <hr>
+                        <div class="subtotal_details">
+                            <h3>Subtotal</h3>
+                            <p>₹<span id="subtotal_amount">0.00</span></p>
+                        </div>
+                        <p class="cart_text">Taxes and shipping are calculated at checkout.</p>
+                        <div class="checkout_button">
+                            <button>Checkout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <div class="mobile_filter">
+        <h2 class="filter_btn">Filters</h2>
+        <button class="close-filters">✖ Close</button>
+    </div>
+
+    <div class="breadcrumb">
+        <a href="/home">Home</a>
+        <span> > </span>
+        <a href="/pet_accessory">Accessories</a>
+    </div>
+
+    <div class="main_container">
+        <form class="filter_container">
+            <h2 style="margin-bottom: 40px;">Filter by</h2>
+            <!-- Product Type Filter -->
+            <div class="product_type filters">
+                <div class="heading_button">
+                    <h3>Product Type</h3>
+                    <button class="expand-button">+</button>
+                </div>
+                <% const uniqueProductTypes = [...new Set(filters.productTypes)]; %>
+                <% uniqueProductTypes.forEach(type => { %>
+                    <p class="hidden">
+                        <input type="checkbox" id="<%= type.replace(/\s+/g, '-').toLowerCase() %>" name="product-type" value="<%= type %>">
+                        <label for="<%= type.replace(/\s+/g, '-').toLowerCase() %>"><%= type %></label>
+                    </p>
+                <% }); %>
+            </div>
+            <hr>
+            <!-- Color Filter -->
+            <div class="color filters">
+                <div class="heading_button">
+                    <h3>Color</h3>
+                    <button class="expand-button">+</button>
+                </div>
+                <% const uniqueColors = [...new Set(filters.colors)]; %>
+                <% uniqueColors.forEach(color => { %>
+                    <p class="hidden">
+                        <input type="checkbox" id="<%= color.replace(/\s+/g, '-').toLowerCase() %>" name="color" value="<%= color %>">
+                        <label for="<%= color.replace(/\s+/g, '-').toLowerCase() %>"><%= color %></label>
+                    </p>
+                <% }); %>
+            </div>
+            <hr>
+            <!-- Size Filter -->
+            <div class="size filters">
+                <div class="heading_button">
+                    <h3>Size</h3>
+                    <button class="expand-button">+</button>
+                </div>
+                <% const uniqueSizes = [...new Set(filters.sizes)]; %>
+                <% uniqueSizes.forEach(size => { %>
+                    <p class="hidden">
+                        <input type="checkbox" id="<%= size.toLowerCase() %>" name="size" value="<%= size %>">
+                        <label for="<%= size.toLowerCase() %>"><%= size %></label>
+                    </p>
+                <% }); %>
+            </div>
+            <hr>
+            <!-- Price Filter -->
+            <div class="price filters">
+                <div class="heading_button">
+                    <h3>Price</h3>
+                    <button class="expand-button">+</button>
+                </div>
+                <div class="price_filter_div hidden">
+                    <label for="price">Max Price: <span id="max-price">₹<%= filters.maxPrice.toFixed(2) %></span></label>
+                    <input type="range" id="price" name="price" min="0" max="<%= filters.maxPrice %>" value="<%= filters.maxPrice %>">
+                </div>
+            </div>
+            <hr>
+            <button type="button" id="clear-filters">Clear Filters</button>
+            <button type="submit">Apply Filter</button>
+        </form>
+
+        <div class="product_container">
+            <% products.forEach(product => { %>
+                <div class="product_card autoshow" data-product-id="<%= product.id %>">
+                    <div class="product_card_img">
+                        <img src="<%= product.image_path || '/images/default-product.jpg' %>" alt="<%= product.product_name %>">
+                    </div>
+                    <div class="product_card_details">
+                        <h3><%= product.product_name %></h3>
+                        <p class="price-display">
+                            <% 
+                                const lowestVariant = product.variants.reduce((min, variant) => {
+                                    const price = variant.sale_price || variant.regular_price;
+                                    return (!min || price < (min.sale_price || min.regular_price)) ? variant : min;
+                                }, null);
+                                const displayPrice = lowestVariant.sale_price || lowestVariant.regular_price;
+                            %>
+                            <% if (lowestVariant.sale_price) { %>
+                                ₹<%= lowestVariant.sale_price.toFixed(2) %> <span style="text-decoration: line-through; color: #888;">₹<%= lowestVariant.regular_price.toFixed(2) %></span>
+                            <% } else { %>
+                                ₹<%= lowestVariant.regular_price.toFixed(2) %>
+                            <% } %>
+                        </p>
+                    </div>
+                </div>
+            <% }); %>
+            <p class="no-products-message">No products match your filters.</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-column">
+                <h3>Happy Tails</h3>
+                <ul>
+                    <li><a href="/blog">Blog</a></li>
+                    <li><a href="/pet_accessory">Online Pet Accessories</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Partner</h3>
+                <ul>
+                    <li><a href="/store_signup">Pet Store Franchise</a></li>
+                    <li><a href="/event_manager_signup">Become an Event manager</a></li>
+                </ul>
+            </div>
+            <div class="footer-column">
+                <h3>Policy</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Refund Policy</a></li>
+                    <li><a href="#">Cancellation Policy</a></li>
+                    <li><a href="#">Terms & Conditions</a></li>
+                </ul>
+                <div class="footer-social">
+                    <a href="#"><img src="/icons/facebook-3-logo-svgrepo-com.svg" alt="Facebook"></a>
+                    <a href="#"><img src="/icons/instagram-2016-logo-svgrepo-com.svg" alt="Instagram"></a>
+                    <a href="#"><img src="/icons/youtube-icon-logo-svgrepo-com.svg" alt="YouTube"></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script id="products-data" type="text/plain">
+        <%- productsData %>
+    </script>
+    <script>
+        const productsData = JSON.parse(document.getElementById('products-data').textContent);
+    
+        document.addEventListener("DOMContentLoaded", function () {
+            // Menu and cart functionality
+            const menuIcon = document.getElementById('menuIcon');
+            const sideNavbar = document.getElementById('sideNavbar');
+            const closeBtn = document.getElementById('closeBtn');
+            const cart = document.getElementById('cart');
+            const cartBtn = document.getElementById('cart_btn');
+            const mobileCartBtn = document.getElementById('mobile_cart_btn');
+            const cartCloseBtn = document.getElementById('CartcloseBtn');
+
+            menuIcon.addEventListener('click', () => sideNavbar.classList.toggle('open'));
+            closeBtn.addEventListener('click', () => sideNavbar.classList.remove('open'));
+            cartBtn.addEventListener('click', () => { cart.classList.toggle('open'); renderCart(); });
+            mobileCartBtn.addEventListener('click', () => { sideNavbar.classList.remove('open'); cart.classList.toggle('open'); renderCart(); });
+            cartCloseBtn.addEventListener('click', () => cart.classList.remove('open'));
+
+            // Filter functionality
+            const filterBtn = document.querySelector(".filter_btn");
+            const filters = document.querySelector(".filter_container");
+            const closeFiltersBtn = document.querySelector(".mobile_filter .close-filters");
+            
+            filterBtn.addEventListener("click", () => {
+                filters.classList.add("show");
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeFiltersBtn.addEventListener("click", () => {
+                filters.classList.remove("show");
+                document.body.style.overflow = '';
+            });
+
+            // Initialize price range
+            const priceRange = document.getElementById('price');
+            const maxPriceLabel = document.getElementById('max-price');
+            if (priceRange && maxPriceLabel) {
+                maxPriceLabel.textContent = `₹${parseFloat(priceRange.max).toFixed(2)}`;
+                priceRange.addEventListener('input', function() {
+                    maxPriceLabel.textContent = `₹${parseFloat(this.value).toFixed(2)}`;
+                });
+            }
+
+            // Toggle filter sections
+            document.querySelectorAll('.expand-button').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const filterSection = this.closest('.filters');
+                    const options = filterSection.querySelectorAll('p, .price_filter_div');
+                    options.forEach(option => option.classList.toggle('hidden'));
+                    this.textContent = this.textContent === '+' ? '-' : '+';
+                });
+            });
+
+            // Product card click handler
+            document.querySelectorAll('.product_card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    window.location.href = `/product/${productId}`;
+                });
+            });
+
+            // Filter form submission
+            const filterForm = document.querySelector('.filter_container');
+            const productCards = document.querySelectorAll('.product_card');
+            const productContainer = document.querySelector('.product_container');
+            const noProductsMessage = document.querySelector('.no-products-message');
+
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                applyFilters();
+                filters.classList.remove('show');
+                document.body.style.overflow = '';
+            });
+
+            // Clear filters
+            document.getElementById('clear-filters').addEventListener('click', function() {
+                filterForm.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                
+                if (priceRange) {
+                    priceRange.value = priceRange.max;
+                    maxPriceLabel.textContent = `₹${parseFloat(priceRange.max).toFixed(2)}`;
+                }
+                
+                applyFilters();
+            });
+
+            // Cart functionality
+            function renderCart() {
+                const cartContainer = document.getElementById('cart_product_container');
+                const subtotalElement = document.getElementById('subtotal_amount');
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+                cartContainer.innerHTML = cart.length === 0 ? '<p>Your cart is empty.</p>' : '';
+                cart.forEach((item, index) => {
+                    const cartProduct = document.createElement('div');
+                    cartProduct.classList.add('cart_product');
+                    cartProduct.innerHTML = `
+                        <div class="cart_image">
+                            <img src="${item.image_path}" alt="${item.product_name}" />
+                        </div>
+                        <div class="cart_product_details">
+                            <div class="name_header">
+                                <h3>${item.product_name}</h3>
+                                <img src="/icons/dustbin.svg" alt="dustbin" height="20" class="remove-item" data-index="${index}" />
+                            </div>
+                            <p>Price: ₹<span class="unit-price">${item.price.toFixed(2)}</span></p>
+                            <p>Size: ${item.size || 'N/A'}</p>
+                            <p>Color: ${item.color || 'N/A'}</p>
+                            <div class="quantity_section">
+                                <input type="number" class="quantity" min="1" value="${item.quantity}" data-index="${index}" />
+                                <p>₹<span class="total-price">${(item.price * item.quantity).toFixed(2)}</span></p>
+                            </div>
+                        </div>
+                    `;
+                    cartContainer.appendChild(cartProduct);
+                });
+
+                document.querySelectorAll('.quantity').forEach(input => {
+                    input.addEventListener('input', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        cart[index].quantity = parseInt(this.value) || 1;
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        renderCart();
+                    });
+                });
+
+                document.querySelectorAll('.remove-item').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        cart.splice(index, 1);
+                        localStorage.setItem('cart', JSON.stringify(cart));
+                        renderCart();
+                    });
+                });
+
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                subtotalElement.textContent = subtotal.toFixed(2);
+            }
+
+            // Checkout functionality
+            document.querySelector('.checkout_button button').addEventListener('click', function() {
+                let cart = JSON.parse(localStorage.getItem('cart')) || [];
+                if (cart.length === 0) {
+                    alert('Your cart is empty!');
+                    return;
+                }
+
+                fetch('/checkout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ cart })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Order placed successfully!');
+                        localStorage.removeItem('cart');
+                        cart.classList.remove('open');
+                        window.location.href = '/my_orders';
+                    } else {
+                        alert('Error placing order: ' + data.message);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            // Filter application function
+            function applyFilters() {
+                const formData = new FormData(filterForm);
+                const filters = {
+                    productTypes: formData.getAll('product-type'),
+                    maxPrice: parseFloat(formData.get('price')) || Infinity,
+                    colors: formData.getAll('color'),
+                    sizes: formData.getAll('size')
+                };
+
+                let visibleProducts = 0;
+
+                productCards.forEach(card => {
+                    const productId = card.getAttribute('data-product-id');
+                    const product = productsData.find(p => p.id === productId);
+                    if (!product) {
+                        card.style.display = 'none';
+                        return;
+                    }
+
+                    // Filter by product type (case-insensitive)
+                    const matchesType = filters.productTypes.length === 0 || 
+                        filters.productTypes.some(type => 
+                            product.product_type.toLowerCase().includes(type.toLowerCase())
+                        );
+
+                    // Get all variants that match color/size filters
+                    let matchingVariants = product.variants || [];
+                    
+                    if (filters.colors.length > 0) {
+                        matchingVariants = matchingVariants.filter(variant => 
+                            variant.color && filters.colors.some(color => 
+                                variant.color.toLowerCase().includes(color.toLowerCase())
+                            )
+                        );
+                    }
+
+                    if (filters.sizes.length > 0) {
+                        matchingVariants = matchingVariants.filter(variant => 
+                            variant.size && filters.sizes.some(size => 
+                                variant.size.toLowerCase().includes(size.toLowerCase())
+                            )
+                        );
+                    }
+
+                    // Find the variant with the lowest price
+                    const variantToDisplay = matchingVariants.length > 0
+                        ? matchingVariants.reduce((min, variant) => {
+                            const price = variant.sale_price || variant.regular_price;
+                            return (!min || price < (min.sale_price || min.regular_price)) ? variant : min;
+                        }, null)
+                        : (filters.colors.length === 0 && filters.sizes.length === 0)
+                            ? product.variants.reduce((min, variant) => {
+                                const price = variant.sale_price || variant.regular_price;
+                                return (!min || price < (min.sale_price || min.regular_price)) ? variant : min;
+                            }, null)
+                            : null;
+
+                    if (!variantToDisplay) {
+                        card.style.display = 'none';
+                        return;
+                    }
+
+                    const price = variantToDisplay.sale_price || variantToDisplay.regular_price;
+                    const matchesPrice = price <= filters.maxPrice;
+
+                    // Update the displayed price
+                    const priceElement = card.querySelector('.price-display');
+                    if (priceElement) {
+                        if (variantToDisplay.sale_price) {
+                            priceElement.innerHTML = `₹${variantToDisplay.sale_price.toFixed(2)} <span style="text-decoration: line-through; color: #888;">₹${variantToDisplay.regular_price.toFixed(2)}</span>`;
+                        } else {
+                            priceElement.innerHTML = `₹${variantToDisplay.regular_price.toFixed(2)}`;
+                        }
+                    }
+
+                    // Show or hide the product
+                    const shouldDisplay = matchesType && matchesPrice && 
+                        (matchingVariants.length > 0 || (filters.colors.length === 0 && filters.sizes.length === 0));
+                    
+                    card.style.display = shouldDisplay ? 'block' : 'none';
+                    if (shouldDisplay) visibleProducts++;
+                });
+
+                // Show/hide no products message
+                noProductsMessage.style.display = visibleProducts === 0 ? 'block' : 'none';
+            }
+
+            // Initial render
+            renderCart();
+            applyFilters();
+        });
+    </script>
+</body>
+</html>
